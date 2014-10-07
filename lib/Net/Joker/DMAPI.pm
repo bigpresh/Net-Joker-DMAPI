@@ -98,6 +98,19 @@ has dmapi_url => (
     default => 'https://dmapi.joker.com/request',
 );
 
+=item balance
+
+The current balance of your Joker account; automatically updated each time a
+response from the Joker API is received.
+
+=cut
+
+has balance => (
+    is => 'rw',
+    isa => 'Str',
+);
+
+
 has auth_sid => (
     is => 'rw',
     isa => 'Str',
@@ -176,11 +189,13 @@ sub do_request {
         die sprintf "$method request failed with status %d (%s) ",
             $response->status, $response->status_line;
     } else {
+        my $content = $response->decoded_content;
+        my ($balance) = $content =~ /Account-Balance: \s (\S+)/mx;
+        $self->balance($balance);
         $self->debug_output("Response status " . $response->status_line);
-        $self->debug_output("Response body: " . $response->decoded_content);
-    }
-
-    return $response->decoded_content;
+        $self->debug_output("Response body: " . $content);
+        return $content;
+    };
 }
 
 
