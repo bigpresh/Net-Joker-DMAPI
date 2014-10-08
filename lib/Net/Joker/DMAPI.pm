@@ -325,7 +325,9 @@ sub _parse_whois_response {
             if ($1 eq 'domain.nservers.nserver.handle') {
                 push @nameservers, $2;
             }
-            $1 => $2
+            # For easier use as hashref keys, swap hyphens for underscores
+            (my $key = $1) =~ s/-/_/g;
+            $key => $2
         } split /\n/, $response
     );
 
