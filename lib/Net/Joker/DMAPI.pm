@@ -17,7 +17,7 @@ Net::Joker::DMAPI - interface to Joker's Domain Management API
 
 An attempt at a sane wrapper around Joker's DMAPI (domain management API).
 
-Automatically logs in, and parses responses into somethign a bit more usable as
+Automatically logs in, and parses responses into something a bit more usable as
 much as possible.
 
 =head1 SYNOPSIS
