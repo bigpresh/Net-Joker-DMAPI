@@ -40,6 +40,13 @@ ATTRIBUTES
         The current balance of your Joker account; automatically updated
         each time a response from the Joker API is received.
 
+    available_tlds_list
+        An arrayref of TLDs which are available to the reseller. Joker
+        return this in response to the login call, so this is populated
+        after login; it's recommended you access it via the `available_tlds'
+        method (see below) though, which will call `login' for you first
+        then return the list.
+
 METHODS
     login
         Logs in to the Joker DMAPI, retrieves the `Auth-Sid' from the
@@ -64,6 +71,10 @@ METHODS
         some requests don't return the result, just an ID which you'll then
         need to use to poll for the result.
 
+    available_tlds
+        Returns the list of TLDs which are available to the reseller to
+        sell.
+
     query_whois
         A convenient method to call the DMAPI `query_whois' method, and
         return the response after parsing it into something useful.
@@ -72,4 +83,10 @@ METHODS
 
         The DMAPI accepts `domain', `contact' or `host', to look up domains,
         contact handles or nameservers respectively.
+
+        The response is parsed into a data structure - for instance, the
+        domain's status, which is returned by Joker as `domain.status', will
+        be found at `$whois-'{domain}{status}>. Nameservers are collated
+        into a hashref. Datetimes returned by Joker are automatically
+        inflated to DateTime objects.
 
