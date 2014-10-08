@@ -256,6 +256,11 @@ response after parsing it into something useful.
 The DMAPI accepts C<domain>, C<contact> or C<host>, to look up domains, contact
 handles or nameservers respectively.
 
+The response is parsed into a data structure - for instance, the domain's
+status, which is returned by Joker as C<domain.status>, will be found at
+C<$whois->{domain}{status}>.  Nameservers are collated into a hashref.
+Datetimes returned by Joker are automatically inflated to DateTime objects.
+
 =cut
 
 sub query_whois {
