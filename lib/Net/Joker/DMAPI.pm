@@ -216,8 +216,7 @@ sub do_request {
     my $response = $self->ua->get($url);
 
     if (!$response->is_success) {
-        die sprintf "$method request failed with status %d (%s) ",
-            $response->status, $response->status_line;
+        die "$method request failed: " . $response->status_line;
     } else {
         my $content = $response->decoded_content;
 
