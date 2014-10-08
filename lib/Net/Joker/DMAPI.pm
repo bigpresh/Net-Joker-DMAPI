@@ -111,6 +111,19 @@ has balance => (
     isa => 'Str',
 );
 
+=item available_tlds_list
+
+An arrayref of TLDs which are available to the reseller.  Joker return this in
+response to the login call, so this is populated after login; it's recommended
+you access it via the C<available_tlds> method (see below) though, which will
+call C<login> for you first then return the list.
+
+=cut
+
+has available_tlds_list => (
+    is => 'rw',
+    isa => 'ArrayRef',
+);
 
 has auth_sid => (
     is => 'rw',
@@ -149,13 +162,16 @@ sub login {
         { username => $self->username, password => $self->password }
     );
 
-    # If we got back an Auth-Sid: header, do_request will have updated
-    # $self->auth_sid with it, so just check that happened
-    if ($self->has_auth_sid) {
-        return 1;
-    } else {
+    # If we got back an Auth-Sid: header, do_request will have 
+    # $self->auth_sid with it, so check that happened - if not, login failed
+    if (!$self->has_auth_sid) {
         die "Login request did not return an Auth-Sid";
     }
+
+    # OK, the response body to the login call, strangely, is a list of TLDs
+    # we can sell.  Parse it and store it for reference.
+    my @tlds = split /\n/, $login_result;
+    $self->available_tlds_list([sort @tlds]);
 }
 
 
@@ -215,6 +231,18 @@ sub do_request {
         $self->debug_output("Response body: " . $content);
         return $body;
     };
+}
+
+=item available_tlds
+
+Returns the list of TLDs which are available to the reseller to sell.
+
+=cut
+
+sub available_tlds {
+    my $self = shift;
+    $self->login;
+    return $self->available_tlds_list;
 }
 
 =item query_whois
