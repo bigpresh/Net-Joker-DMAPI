@@ -385,7 +385,7 @@ L<https://github.com/bigpresh/Net-Joker-DMAPI>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012-13 David Precious.
+Copyright 2014 David Precious.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
