@@ -147,10 +147,10 @@ sub login {
         'login',
         { username => $self->username, password => $self->password }
     );
-    my ($auth_sid) = $login_result =~ /^Auth-Sid: \s+ (\S+) /mx;
 
-    if ($auth_sid) {
-        $self->auth_sid($auth_sid);
+    # If we got back an Auth-Sid: header, do_request will have updated
+    # $self->auth_sid with it, so just check that happened
+    if ($self->has_auth_sid) {
         return 1;
     } else {
         die "Login request did not return an Auth-Sid";
@@ -190,11 +190,29 @@ sub do_request {
             $response->status, $response->status_line;
     } else {
         my $content = $response->decoded_content;
-        my ($balance) = $content =~ /Account-Balance: \s (\S+)/mx;
-        $self->balance($balance);
+
+        # Response will consist of some headers (e.g. Version, Status-Text,
+        # Status-Code) then some body lines
+        my ($headers_blob, $body) = split /(?:\r?\n){2,}/, $content, 2;
+        my %headers;
+        for my $header (split /\r?\n/, $headers_blob) {
+            my ($k,$v) = split /:\s/, $header, 2;
+            $headers{$k} = $v;
+        }
+
+        if ($headers{Version} ne '1.2.34') {
+            warn __PACKAGE__ . " $VERSION has not been tested with Joker"
+                . " DMAPI version $headers{Version}";
+        }
+        if ($headers{'Status-Code'} != 0) {
+            die "Joker requst failed with status " . $headers{'Status-Text'};
+        }
+
+        $self->balance($headers{'Account-Balance'});
+        $self->auth_sid($headers{'Auth-Sid'}) if $headers{'Auth-Sid'};
         $self->debug_output("Response status " . $response->status_line);
         $self->debug_output("Response body: " . $content);
-        return $content;
+        return $body;
     };
 }
 
@@ -212,6 +230,9 @@ sub debug_output {
     my ($self, $message) = @_;
     say "DEBUG: $message" if $self->debug;
 }
+
+
+
 
 
 "Joker, your API smells of wee.";
