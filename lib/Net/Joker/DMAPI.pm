@@ -355,7 +355,32 @@ sub _parse_whois_response {
 }
 
 
+=back
 
+=head1 AUTHOR
+
+David Precious C<< <davidp@preshweb.co.uk> >>
+
+=head1 BUGS / FEATURE REQUESTS
+
+If you've found a bug, or have a feature request or wish to contribute a patch,
+this module is developed on GitHub - please feel free to raise issues or pull
+requests against the repo at:
+L<https://github.com/bigpresh/Net-Joker-DMAPI>
+
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2012-13 David Precious.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
+=cut
 
 
 "Joker, your API smells of wee.";
+
