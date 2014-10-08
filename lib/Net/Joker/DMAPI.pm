@@ -3,6 +3,7 @@ package Net::Joker::DMAPI;
 our $VERSION = '0.01';
 use strict;
 use 5.010;
+use DateTime;
 use Hash::Merge;
 use LWP::UserAgent;
 use Moose;
@@ -310,6 +311,20 @@ sub _parse_whois_response {
             $1 => $2
         } split /\n/, $response
     );
+
+    # First pass: match dates and inflate them into DateTime objects:
+    for my $date_key (grep { $_ =~ /\.date$/ } keys %key_value_pairs) {
+        $key_value_pairs{$date_key} =~ m{
+                (?<year>   \d{4} )
+                (?<month>  \d{2} )
+                (?<day>    \d{2} )
+                (?<hour>   \d{2} )
+                (?<minute> \d{2} )
+                (?<second> \d{2} )
+        }x;
+        my $dt = DateTime->new(%+);
+        $key_value_pairs{$date_key} = $dt;
+    }
    
     while (my($key, $value) = each \%key_value_pairs) {
         my @parts = split qr(\.), $key;
