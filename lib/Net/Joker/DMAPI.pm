@@ -235,23 +235,7 @@ sub query_whois {
     $self->login;
     my $result = $self->do_request('query-whois', $params);
 
-    # Now the ugly part - walk the result lines, one by one, and attempt to turn
-    # it all into something a big more useful.  Some parts are easy - e.g.
-    # C<domain.name: E Xample>  becomes C<$r->{domain}{status} = 'E Xampl'>, but
-    # some are odder - for instance, nameservers consist of alternating lines,
-    # containing a number and a value each.
-
-    my $r;
-    my @nameservers;
-    my $saw_blank_line;
-    
-    $r = $self->_parse_whois_response($result);
-    # OK, add the nameservers in to our response, if we queried a domain
-    if ($params->{domain}) {
-        $r->{domain}{nameservers} = \@nameservers;
-    }
-
-    return $r;
+    return $self->_parse_whois_response($result);
 }
 
 
@@ -283,14 +267,22 @@ sub _parse_whois_response {
     my ($self, $response) = @_;
 
     my $results = {};
-
+    my @nameservers;
     my %key_value_pairs = (
         map {
             $_ =~ /(\S+): (.+)/;
+            # BODGE: don't like doing this in the map, but the data will be
+            # lost if we do it later, as Joker return multiple nameservers
+            # as pairs of lines like:
+            # domain.nservers.nserver.no: 1
+            # domain.nservers.nserver.handle: ns.example.com
+            if ($1 eq 'domain.nservers.nserver.handle') {
+                push @nameservers, $2;
+            }
             $1 => $2
         } split /\n/, $response
     );
-    
+   
     while (my($key, $value) = each \%key_value_pairs) {
         my @parts = split qr(\.), $key;
         my $r->{ pop @parts } = $value;
@@ -303,6 +295,12 @@ sub _parse_whois_response {
         }
         $results = Hash::Merge::merge($results, $r);
     }
+    
+    if (@nameservers) {
+        $results->{domain}{nameservers} = \@nameservers;
+        delete $results->{domain}{nservers};
+    }
+    return $results;
 }
 
 
