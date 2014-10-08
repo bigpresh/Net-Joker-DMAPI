@@ -316,18 +316,18 @@ sub _parse_whois_response {
     my @nameservers;
     my %key_value_pairs = (
         map {
-            $_ =~ /(\S+): (.+)/;
+            my ($key, $value) = $_ =~ /(\S+): (.+)/;
             # BODGE: don't like doing this in the map, but the data will be
             # lost if we do it later, as Joker return multiple nameservers
             # as pairs of lines like:
             # domain.nservers.nserver.no: 1
             # domain.nservers.nserver.handle: ns.example.com
-            if ($1 eq 'domain.nservers.nserver.handle') {
-                push @nameservers, $2;
+            if ($key eq 'domain.nservers.nserver.handle') {
+                push @nameservers, $value;
             }
             # For easier use as hashref keys, swap hyphens for underscores
-            (my $key = $1) =~ s/-/_/g;
-            $key => $2
+            $key  =~ s/-/_/g;
+            $key => $value
         } split /\n/, $response
     );
 
