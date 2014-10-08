@@ -3,6 +3,7 @@ package Net::Joker::DMAPI;
 our $VERSION = '0.01';
 use strict;
 use 5.010;
+use Hash::Merge;
 use LWP::UserAgent;
 use Moose;
 use URI;
@@ -216,6 +217,43 @@ sub do_request {
     };
 }
 
+=item query_whois
+
+A convenient method to call the DMAPI C<query_whois> method, and return the
+response after parsing it into something useful.
+
+    my $whois = $dmapi->query_whois({ domain => $domain });
+
+The DMAPI accepts C<domain>, C<contact> or C<host>, to look up domains, contact
+handles or nameservers respectively.
+
+=cut
+
+sub query_whois {
+    my ($self, $params) = @_;
+
+    $self->login;
+    my $result = $self->do_request('query-whois', $params);
+
+    # Now the ugly part - walk the result lines, one by one, and attempt to turn
+    # it all into something a big more useful.  Some parts are easy - e.g.
+    # C<domain.name: E Xample>  becomes C<$r->{domain}{status} = 'E Xampl'>, but
+    # some are odder - for instance, nameservers consist of alternating lines,
+    # containing a number and a value each.
+
+    my $r;
+    my @nameservers;
+    my $saw_blank_line;
+    
+    $r = $self->_parse_whois_response($result);
+    # OK, add the nameservers in to our response, if we queried a domain
+    if ($params->{domain}) {
+        $r->{domain}{nameservers} = \@nameservers;
+    }
+
+    return $r;
+}
+
 
 # Given a method name and parameters, return the appropriate URL for the request
 sub form_request_url {
@@ -229,6 +267,42 @@ sub form_request_url {
 sub debug_output {
     my ($self, $message) = @_;
     say "DEBUG: $message" if $self->debug;
+}
+
+
+# Parse the format we get back from query-whois into a sensible data strucuture
+# The format looks like lines in the format:
+# domain.status: lock,transfer-autoack
+# domain.name: J Example
+# domain.created.date: 20000914175917
+# ...etc - and we want to parse that into a data structure, e.g.:
+# { domain => { status => '...', name => '...', created => { date => '...' } } }
+# TODO: may need a more generic name if this format is used for other API
+# responses
+sub _parse_whois_response {
+    my ($self, $response) = @_;
+
+    my $results = {};
+
+    my %key_value_pairs = (
+        map {
+            $_ =~ /(\S+): (.+)/;
+            $1 => $2
+        } split /\n/, $response
+    );
+    
+    while (my($key, $value) = each \%key_value_pairs) {
+        my @parts = split qr(\.), $key;
+        my $r->{ pop @parts } = $value;
+        my $aux;
+
+        for my $part (reverse @parts) {
+            $aux = {};
+            $aux->{$part} = $r;
+            $r = $aux;
+        }
+        $results = Hash::Merge::merge($results, $r);
+    }
 }
 
 
