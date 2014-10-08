@@ -348,7 +348,7 @@ sub _parse_whois_response {
     # This parsing code was based on a solution kindly supplied by atta on
     # Freenode/#perl late one night when my brain couldn't quite attack this
     # problem.  Thanks, atta!
-    while (my($key, $value) = each \%key_value_pairs) {
+    while (my($key, $value) = each %key_value_pairs) {
         my @parts = split qr(\.), $key;
         my $r->{ pop @parts } = $value;
         my $aux;
