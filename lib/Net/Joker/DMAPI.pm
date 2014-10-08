@@ -22,12 +22,24 @@ much as possible.
 
 =head1 SYNOPSIS
 
-    my $dmapi = Joker::DMAPI->new(
+    my $dmapi = Net::Joker::DMAPI->new(
         username => 'bob@example.com',
         password => 'hunter2',
     );
 
-    my $whois_details = $dmapi->query_whois($domain);
+    # Get whois details for a domain - returns parsed data structure
+    my $whois_details = $dmapi->query_whois({ domain => $domain });
+    my @nameservers = @{ $whos_details->{domain}{nameservers} };
+    
+    # can also use query_whois on contact handles
+    my $admin_handle_details = $dmapi->query_whois(
+        { contact => $whois_details->{domain}{admin_c} }
+    );
+    
+    my $current_balance = $dmapi->current_balance;
+
+    my $tlds = $dmapi->available_tlds;
+
 
 =head1 ATTRIBUTES
 
