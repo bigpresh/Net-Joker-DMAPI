@@ -331,7 +331,9 @@ sub _parse_whois_response {
     );
 
     # First pass: match dates and inflate them into DateTime objects:
-    for my $date_key (grep { $_ =~ /\.date$/ } keys %key_value_pairs) {
+    for my $date_key (grep { 
+        $_ =~ /\.date$/ || $_ eq 'domain.expires'
+        } keys %key_value_pairs) {
         $key_value_pairs{$date_key} =~ m{
                 (?<year>   \d{4} )
                 (?<month>  \d{2} )
