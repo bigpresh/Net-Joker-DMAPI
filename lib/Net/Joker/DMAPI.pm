@@ -165,7 +165,7 @@ sub login {
     
     # If we've already logged in, we're fine
     # TODO: do we need to test the auth-sid is still valid?
-    if (!$self->has_auth_sid) {
+    if ($self->auth_sid) {
         $self->_debug_output("Already have auth_sid, no need to log in");
         return 1;
     }
