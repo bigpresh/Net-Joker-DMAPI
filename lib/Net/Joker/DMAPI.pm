@@ -283,6 +283,18 @@ sub query_whois {
     return $self->_parse_whois_response($result);
 }
 
+=item expiry_date
+
+Returns the expiry date for the given domain.
+
+  my $expires_datetime = $dmapi->expiry_date($domain);
+
+=cut
+
+sub expiry_date {
+    my ($self, $domain) = @_;
+    return $self->query_whois({ domain => $domain })->{domain}{expires};
+}
 
 # Given a method name and parameters, return the appropriate URL for the request
 sub form_request_url {
