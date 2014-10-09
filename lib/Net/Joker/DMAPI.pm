@@ -406,6 +406,15 @@ by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
 
+=head1 SEE ALSO
+
+Joker's DMAPI documentation is at:
+L<https://joker.com/faq/category/39/22-dmapi.html>
+
+L<WWW::Domain::Registry::Joker> is another module for talking to Joker's DMAPI,
+but hasn't been updated for some time and doesn't provide any convenient methods
+or parsing of responses, just the basics.
+
 =cut
 
 
