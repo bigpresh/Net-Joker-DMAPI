@@ -234,7 +234,7 @@ sub do_request {
                 . " DMAPI version $headers{Version}";
         }
         if ($headers{'Status-Code'} != 0) {
-            die "Joker requst failed with status " . $headers{'Status-Text'};
+            die "Joker request failed with status " . $headers{'Status-Text'};
         }
 
         $self->balance($headers{'Account-Balance'});
@@ -381,6 +381,12 @@ sub _parse_whois_response {
     return $results;
 }
 
+
+# Destructor, to end session
+sub DESTROY {
+    my ($self) = @_;
+    $self->do_request('logout');
+}
 
 =back
 
