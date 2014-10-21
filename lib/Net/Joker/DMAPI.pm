@@ -3,6 +3,7 @@ package Net::Joker::DMAPI;
 our $VERSION = '0.02';
 use strict;
 use 5.010;
+use Data::Censor;
 use DateTime;
 use Hash::Merge;
 use LWP::UserAgent;
@@ -237,7 +238,8 @@ sub do_request {
 
     my $url = $self->_form_request_url($method, $params);
     $self->_log(
-        info => "Calling $method with params: " . Data::Dump::dump($params)
+        info => "Calling $method with params: "
+            . Data::Dump::dump(Data::Censor->clone_and_censor($params))
     );
     my $response = $self->ua->get($url);
 
@@ -257,7 +259,8 @@ sub do_request {
             $headers{$k} = $v;
         }
 
-        if ($headers{Version} ne '1.2.34') {
+        my ($dmapi_major_version) = $headers{Version} =~ /^(\d+\.\d+)\./;
+        if ($dmapi_major_version ne '1.2') {
             warn __PACKAGE__ . " $VERSION has not been tested with Joker"
                 . " DMAPI version $headers{Version}";
         }
