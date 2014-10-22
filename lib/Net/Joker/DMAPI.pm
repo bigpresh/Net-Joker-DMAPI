@@ -337,7 +337,7 @@ sub expiry_date {
 sub _form_request_url {
     my ($self, $method, $args) = @_;
     my $uri = URI->new($self->dmapi_url . "/$method");
-    $uri->query_form({ 'auth-sid' => $self->auth_sid, %$args });
+    $uri->query_form({ 'auth-sid' => $self->auth_sid, %{ $args || {} });
     return $uri->canonical;
 }
 
