@@ -294,6 +294,22 @@ sub available_tlds {
     return $self->available_tlds_list;
 }
 
+=item account_balance
+
+Returns the current balance of your Joker account.  The C<balance> attribute is
+automatically updated after every API call; this method is simply provided to
+ensure you're logged in and return the balance - useful if you want to monitor
+the balance from a Nagios plugin, say, rather than just seeing what the balance
+was after making another API call.
+
+=cut
+
+sub account_balance {
+    my $self = shift;
+    $self->login;
+    return $self->balance;
+}
+
 =item query_whois
 
 A convenient method to call the DMAPI C<query_whois> method, and return the
@@ -337,7 +353,7 @@ sub expiry_date {
 sub _form_request_url {
     my ($self, $method, $args) = @_;
     my $uri = URI->new($self->dmapi_url . "/$method");
-    $uri->query_form({ 'auth-sid' => $self->auth_sid, %{ $args || {} });
+    $uri->query_form({ 'auth-sid' => $self->auth_sid, %{ $args || {} } });
     return $uri->canonical;
 }
 
