@@ -238,6 +238,7 @@ you'll then need to use to poll for the result.
 sub do_request {
     my ($self, $method, $params) = @_;
 
+    $params ||= {};
     my $url = $self->_form_request_url($method, $params);
     $self->_log(
         info => "Calling $method with params: "
