@@ -3,6 +3,7 @@ package Net::Joker::DMAPI;
 our $VERSION = '0.04';
 use strict;
 use 5.010;
+use Carp;
 use Data::Censor;
 use Data::Dump;
 use DateTime;
@@ -329,7 +330,14 @@ Datetimes returned by Joker are automatically inflated to DateTime objects.
 
 sub query_whois {
     my ($self, $params) = @_;
-
+    my @acceptable_params = qw(domain contact host);
+    my @specs = grep { defined $_ } map { $params->{$_} } @acceptable_params;
+    if (scalar @specs != 1) {
+        Carp::croak(
+            "query_whois must be called with exactly one of the params: "
+            . join ',', @acceptable_params
+        );
+    }
     $self->login;
     my $result = $self->do_request('query-whois', $params);
 
