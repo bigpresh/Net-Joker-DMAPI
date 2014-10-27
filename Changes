@@ -1,6 +1,6 @@
 Revision history for Net-Joker-DMAPI
 
-0.05    
+0.05   2014-10-27 
         - New account_balance method
         - Avoid failing if calling a method with no args hashref.
         - Check parameters passed to query_whois, croak if used wrongly
