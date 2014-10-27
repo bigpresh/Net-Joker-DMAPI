@@ -24,6 +24,7 @@ WriteMakefile(
         'Hash::Merge'    => 0,
         'LWP::UserAgent' => 0,
         'Moo'          => 0,
+        'MooX::Types::MooseLike::Base' => 0,
         URI              => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
