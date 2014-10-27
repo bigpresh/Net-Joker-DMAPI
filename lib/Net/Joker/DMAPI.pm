@@ -9,7 +9,8 @@ use Data::Dump;
 use DateTime;
 use Hash::Merge;
 use LWP::UserAgent;
-use Moose;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
 use URI;
 
 =head1 NAME
@@ -56,7 +57,7 @@ Your Joker account username.
 
 has username => (
     is => 'rw',
-    isa => 'Str',
+    isa => Str,
 );
 
 =item password
@@ -67,7 +68,7 @@ Your Joker account password
 
 has password => (
     is => 'rw',
-    isa => 'Str',
+    isa => Str,
 );
 
 =item debug
@@ -81,7 +82,7 @@ output to STDOUT as well as passed to the C<logger> coderef (if provided).
 
 has debug => (
     is => 'rw',
-    isa => 'Str',
+    isa => Str,
     default => 0,
 );
 
@@ -94,8 +95,8 @@ need to supply this unless you have a specific need to do so.
 
 has ua => (
     is => 'rw',
-    isa => 'LWP::UserAgent',
-    lazy_build => 1,
+    isa => InstanceOf['LWP::UserAgent'],
+    builder => 1,
 );
 sub _build_ua {
     my $ua = LWP::UserAgent->new;
@@ -113,7 +114,7 @@ URL.
 
 has dmapi_url => (
     is => 'rw',
-    isa => 'Str',
+    isa => Str,
     default => 'https://dmapi.joker.com/request',
 );
 
@@ -126,7 +127,7 @@ response from the Joker API is received.
 
 has balance => (
     is => 'rw',
-    isa => 'Str',
+    isa => Str,
 );
 
 =item available_tlds_list
@@ -140,7 +141,7 @@ call C<login> for you first then return the list.
 
 has available_tlds_list => (
     is => 'rw',
-    isa => 'ArrayRef',
+    isa => ArrayRef,
 );
 
 
@@ -157,13 +158,13 @@ C<info>, C<error>), and the message.
 
 has logger => (
     is => 'rw',
-    isa => 'CodeRef',
+    isa => CodeRef,
     predicate => 'has_logger',
 );
 
 has auth_sid => (
     is => 'rw',
-    isa => 'Str',
+    isa => Str,
     default => '',
     predicate => 'has_auth_sid',
 );
