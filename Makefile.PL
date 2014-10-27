@@ -23,7 +23,7 @@ WriteMakefile(
         'DateTime'       => 0,
         'Hash::Merge'    => 0,
         'LWP::UserAgent' => 0,
-        'Moose'          => 0,
+        'Moo'          => 0,
         URI              => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
