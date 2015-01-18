@@ -377,7 +377,7 @@ sub _log {
         $self->logger->($level, $message);
     }
     if ($self->debug) {
-        say "($level) $message";
+        print STDERR "($level) $message\n";
     }
 }
     
