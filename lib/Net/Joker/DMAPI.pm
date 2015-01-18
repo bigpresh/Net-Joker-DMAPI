@@ -2,6 +2,7 @@ package Net::Joker::DMAPI;
 
 our $VERSION = '0.05';
 use strict;
+use warnings;
 use 5.010;
 use Carp;
 use Data::Censor;
