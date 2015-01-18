@@ -457,7 +457,9 @@ sub _parse_whois_response {
 # Destructor, to end session
 sub DESTROY {
     my ($self) = @_;
-    $self->do_request('logout');
+    if ( $self->has_auth_sid ) {
+        $self->do_request('logout');
+    }
 }
 
 =back
