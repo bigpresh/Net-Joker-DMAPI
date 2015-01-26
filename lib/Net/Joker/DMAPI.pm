@@ -276,7 +276,7 @@ sub do_request {
             die $error;
         }
 
-        $self->balance($headers{'Account-Balance'});
+        $self->balance($headers{'Account-Balance'}) if $headers{'Account-Balance'};
         $self->auth_sid($headers{'Auth-Sid'}) if $headers{'Auth-Sid'};
         $self->_log(
             info => "$method response status " . $response->status_line
