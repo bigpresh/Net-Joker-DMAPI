@@ -282,7 +282,8 @@ sub do_request {
             info => "$method response status " . $response->status_line
                 . " - body: $content"
         );
-        return $body;
+
+        return wantarray ? ($body, %headers) : $body;
     };
 }
 
