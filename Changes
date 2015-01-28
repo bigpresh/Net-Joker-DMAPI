@@ -1,5 +1,10 @@
 Revision history for Net-Joker-DMAPI
 
+0.06   2015-01-28
+        - Some changes from @tczepiel (thanks!) in PR-3 - robustification,
+          returning headers and response in list context, handling session
+          expiry  nicely, logging out  on DESTROY optional etc.
+
 0.05   2014-10-27 
         - New account_balance method
         - Avoid failing if calling a method with no args hashref.
