@@ -83,8 +83,20 @@ output to STDOUT as well as passed to the C<logger> coderef (if provided).
 
 has debug => (
     is => 'rw',
-    isa => Str,
+    isa => Int,
     default => 0,
+);
+
+=item logout_on_destroy
+
+End the Joker session upon object destruction, 1 by default.
+
+=cut
+
+has logout_on_destroy => (
+    is      => 'rw',
+    isa     => Int,
+    default => 1,
 );
 
 =item ua
@@ -474,7 +486,8 @@ sub _parse_whois_response {
 # Destructor, to end session
 sub DESTROY {
     my ($self) = @_;
-    if ( $self->has_auth_sid ) {
+    if ( $self->has_auth_sid  && $self->logout_on_destroy ) {
+        $self->_joker_session_expiry_time(time());
         $self->do_request('logout');
     }
 }
