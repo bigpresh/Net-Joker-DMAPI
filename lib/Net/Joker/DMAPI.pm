@@ -498,6 +498,11 @@ sub DESTROY {
 
 David Precious C<< <davidp@preshweb.co.uk> >>
 
+=head1 ACKNOWLEDGEMENTS
+
+Tomasz Czepiel (@tczepiel)
+
+
 =head1 BUGS / FEATURE REQUESTS
 
 If you've found a bug, or have a feature request or wish to contribute a patch,
