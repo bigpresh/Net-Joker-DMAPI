@@ -41,6 +41,9 @@ ATTRIBUTES
         true, all messages will be output to STDOUT as well as passed to the
         `logger' coderef (if provided).
 
+    logout_on_destroy
+        End the Joker session upon object destruction, 1 by default.
+
     ua  An LWP::UserAgent object to use. One is constructed by default, so
         you don't need to supply this unless you have a specific need to do
         so.
@@ -97,6 +100,14 @@ METHODS
         Returns the list of TLDs which are available to the reseller to
         sell.
 
+    account_balance
+        Returns the current balance of your Joker account. The `balance'
+        attribute is automatically updated after every API call; this method
+        is simply provided to ensure you're logged in and return the balance
+        - useful if you want to monitor the balance from a Nagios plugin,
+        say, rather than just seeing what the balance was after making
+        another API call.
+
     query_whois
         A convenient method to call the DMAPI `query_whois' method, and
         return the response after parsing it into something useful.
@@ -119,6 +130,9 @@ METHODS
 
 AUTHOR
     David Precious `<davidp@preshweb.co.uk>'
+
+ACKNOWLEDGEMENTS
+    Tomasz Czepiel (@tczepiel)
 
 BUGS / FEATURE REQUESTS
     If you've found a bug, or have a feature request or wish to contribute a
