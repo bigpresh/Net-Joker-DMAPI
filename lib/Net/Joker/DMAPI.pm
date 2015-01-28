@@ -1,7 +1,8 @@
 package Net::Joker::DMAPI;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 use strict;
+use warnings;
 use 5.010;
 use Carp;
 use Data::Censor;
@@ -82,8 +83,20 @@ output to STDOUT as well as passed to the C<logger> coderef (if provided).
 
 has debug => (
     is => 'rw',
-    isa => Str,
+    isa => Int,
     default => 0,
+);
+
+=item logout_on_destroy
+
+End the Joker session upon object destruction, 1 by default.
+
+=cut
+
+has logout_on_destroy => (
+    is      => 'rw',
+    isa     => Int,
+    default => 1,
 );
 
 =item ua
@@ -184,22 +197,38 @@ methods, but if you want to poke at C<do_request> yourself, you'll need it.
 
 =cut
 
+has _joker_session_expiry_time => (
+    is  => 'rw',
+    isa => Int,
+);
+
+sub _joker_session_still_valid {
+    my $self = shift;
+
+    return 1 if $self->_joker_session_expiry_time > time();
+}
+
 sub login {
     my $self = shift;
     
     # If we've already logged in, we're fine
-    # TODO: do we need to test the auth-sid is still valid?
-    if ($self->auth_sid) {
+    if ($self->auth_sid && $self->_joker_session_still_valid()) {
         $self->_log(debug => "Already have auth_sid, no need to log in");
         return 1;
     }
 
     $self->_log(info => "Logging in as " . $self->username);
-    my $login_result = $self->do_request(
+    my ($login_body, %headers) = $self->do_request(
         'login',
         { username => $self->username, password => $self->password }
     );
 
+    my $session_timeout
+        = exists $headers{'Session-Timeout'}
+        ? $headers{'Session-Timeout'}
+        : 3600;
+
+    $self->_joker_session_expiry_time(time() + $session_timeout);
     # If we got back an Auth-Sid: header, do_request will have 
     # $self->auth_sid with it, so check that happened - if not, login failed
     if (!$self->has_auth_sid) {
@@ -209,7 +238,7 @@ sub login {
 
     # OK, the response body to the login call, strangely, is a list of TLDs
     # we can sell.  Parse it and store it for reference.
-    my @tlds = split /\n/, $login_result;
+    my @tlds = split /\n/, $login_body;
     $self->available_tlds_list([sort @tlds]);
 
     $self->_log(debug => "Login was successful");
@@ -275,13 +304,14 @@ sub do_request {
             die $error;
         }
 
-        $self->balance($headers{'Account-Balance'});
+        $self->balance($headers{'Account-Balance'}) if defined $headers{'Account-Balance'};
         $self->auth_sid($headers{'Auth-Sid'}) if $headers{'Auth-Sid'};
         $self->_log(
             info => "$method response status " . $response->status_line
                 . " - body: $content"
         );
-        return $body;
+
+        return wantarray ? ($body, %headers) : $body;
     };
 }
 
@@ -376,7 +406,7 @@ sub _log {
         $self->logger->($level, $message);
     }
     if ($self->debug) {
-        say "($level) $message";
+        print STDERR "($level) $message\n";
     }
 }
     
@@ -456,7 +486,10 @@ sub _parse_whois_response {
 # Destructor, to end session
 sub DESTROY {
     my ($self) = @_;
-    $self->do_request('logout');
+    if ( $self->has_auth_sid  && $self->logout_on_destroy ) {
+        $self->_joker_session_expiry_time(time());
+        $self->do_request('logout');
+    }
 }
 
 =back
