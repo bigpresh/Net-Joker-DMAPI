@@ -276,6 +276,11 @@ sub do_request {
     );
     my $response = $self->ua->get($url);
 
+    $self->_log(
+        info => "$method response status " . $response->status_line
+            . " - body: $response->decoded_content"
+    );
+
     if (!$response->is_success) {
         my $error = "$method request failed: " . $response->status_line;
         $self->_log( error => $error );
@@ -306,10 +311,6 @@ sub do_request {
 
         $self->balance($headers{'Account-Balance'}) if defined $headers{'Account-Balance'};
         $self->auth_sid($headers{'Auth-Sid'}) if $headers{'Auth-Sid'};
-        $self->_log(
-            info => "$method response status " . $response->status_line
-                . " - body: $content"
-        );
 
         return wantarray ? ($body, %headers) : $body;
     };
@@ -533,5 +534,5 @@ or parsing of responses, just the basics.
 =cut
 
 
-"Joker, your API smells of wee.";
+1;
 
