@@ -1,6 +1,6 @@
 package Net::Joker::DMAPI;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 use strict;
 use warnings;
 use 5.010;
