@@ -8,7 +8,7 @@ WriteMakefile(
     AUTHOR           => q{David Precious <davidp@preshweb.co.uk>},
     VERSION_FROM     => 'lib/Net/Joker/DMAPI.pm',
     ABSTRACT_FROM    => 'lib/Net/Joker/DMAPI.pm',
-    LICENSE          => 'Artistic_2_0',
+    LICENSE          => 'perl',
     PL_FILES         => {},
     MIN_PERL_VERSION => 5.010,
     CONFIGURE_REQUIRES => {
@@ -29,4 +29,11 @@ WriteMakefile(
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Net-Joker-DMAPI-*' },
+    META_MERGE => {
+        resources => {
+            repository => 'https://github.com/bigpresh/Net-Joker-DMAPI',
+            bugtracker => 'https://github.com/bigpresh/Net-Joker-DMAPI/issues',
+            homepage   => 'https://github.com/bigpresh/Net-Joker-DMAPI',
+        },
+    },
 );
