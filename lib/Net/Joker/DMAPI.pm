@@ -297,7 +297,7 @@ sub do_request {
             $headers{$k} = $v;
         }
 
-        my ($dmapi_major_version) = $headers{Version} =~ /^(\d+\.\d+)\./;
+        my ($dmapi_major_version) = $headers{Version} =~ /^(\d+\.\d+)\.?/;
         if ($dmapi_major_version ne '1.2') {
             warn __PACKAGE__ . " $VERSION has not been tested with Joker"
                 . " DMAPI version $headers{Version}";
