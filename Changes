@@ -1,5 +1,9 @@
 Revision history for Net-Joker-DMAPI
 
+0.08   2016-11-18
+        - Accept just "1.2" as the version, rather than expecting 1.2.x
+          As best I can tell, their version number has gone backwards.
+
 0.07   2016-08-22
         - Always log full response body (req by SKINGTON)
 
