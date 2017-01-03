@@ -278,7 +278,7 @@ sub do_request {
 
     $self->_log(
         info => "$method response status " . $response->status_line
-            . " - body: $response->decoded_content"
+            . " - body: " . $response->decoded_content
     );
 
     if (!$response->is_success) {
