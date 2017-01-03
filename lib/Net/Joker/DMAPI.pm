@@ -1,6 +1,6 @@
 package Net::Joker::DMAPI;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 use strict;
 use warnings;
 use 5.010;
@@ -514,7 +514,7 @@ L<https://github.com/bigpresh/Net-Joker-DMAPI>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 David Precious.
+Copyright 2014-17 David Precious.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
