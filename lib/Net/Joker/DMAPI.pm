@@ -72,6 +72,30 @@ has password => (
     isa => Str,
 );
 
+=item auto_poll
+
+Whether to automatically poll for results of an async API call and return them.
+Joker's DMAPI, being a batshit overlay for their ancient email-based
+asychronous system, will return just a C<Proc-ID>, which is a "processing ID",
+which you can later query with the C<result-retrieve> call to get the actual
+results of the call when available.
+
+If this is set to a true value, this module will handle that polling for you,
+and will keep polling Joker until the result is available, then return you the
+result.  (See the C<poll_frequency> and C<poll_retries> attributes to tweak how
+aggressively it polls and for how long it will wait.)
+
+If we haven't had a result after polling C<poll_retries> times every 
+C<poll_frequency> seconds, we will give up and die.
+
+=cut
+
+has auto_poll => (
+    isa     => Bool,
+    is      => 'rw',
+    default => 1,
+);
+
 =item debug
 
 Whether to omit debug messages; disabled by default, set to a true value to
@@ -111,6 +135,33 @@ has ua => (
     isa => InstanceOf['LWP::UserAgent'],
     builder => 1,
 );
+
+=item poll_frequency
+
+How long we should sleep between each call to C<result-retrieve> if the
+C<auto_poll> setting is enabled, in (potentially fractional) seconds.
+
+=cut
+
+has poll_frequency => (
+    is      => 'rw',
+    isa     => Int,
+    default => 1,
+);
+
+=item poll_retries
+
+How many times we should try polling Joker for results via C<result-retrieve>
+if the C<auto_poll> setting is enabled, before we give up.
+
+=cut
+
+has poll_retries => (
+    is      => 'rw',
+    isa     => Int,
+    default => 20,
+);
+
 sub _build_ua {
     my $ua = LWP::UserAgent->new;
     $ua->agent(__PACKAGE__ . "/$VERSION");
@@ -250,6 +301,10 @@ sub login {
 Takes the method name you want to call, and a hashref of arguments, calls the
 method, and returns the response.
 
+If the C<auto_poll> setting is enabled, then for requests which return a
+C<Proc-ID> "processing ID" instead of a result, we will transparently call
+C<result-retrieve> until we have a response, and return that.
+
 For instance:
 
   my $response = $dmapi->do_request('query-whois', { domain => $domain });
@@ -257,15 +312,56 @@ For instance:
 The response returned is as given by Joker's (inconsistent) API, though; so
 you'll probably want to look for a suitable method in this class which takes
 care of parsing the response and returning something useful.  If a method for
-the DMAPI method you wish to use doesn't yet exist, contact me or submit a patch
-:)  In particular, some requests don't return the result, just an ID which
-you'll then need to use to poll for the result.
+the DMAPI method you wish to use doesn't yet exist, contact me or submit a 
+patch adding it.
 
 =cut
 
 # Given a method name and some params, perform the request, check for success,
 # and return the result
 sub do_request {
+    my ($self, $method, $params) = @_;
+
+    my ($headers, $body) = $self->_do_request($method, $params);
+
+    if ($headers->{'Status-Code'} != 0) {
+        my $error = "Joker request failed with status "
+            . $headers->{'Status-Text'};
+        $self->_log(error => $error);
+        die $error;
+    }
+
+    $self->balance($headers->{'Account-Balance'})
+        if defined $headers->{'Account-Balance'};
+    $self->auth_sid($headers->{'Auth-Sid'}) if $headers->{'Auth-Sid'};
+
+
+    # OK, if the result contains a Proc-ID header, and auto_poll is enabled,
+    # then poll for the results
+    if ($headers->{'Proc-ID'} and $self->auto_poll) {
+        my $tries;
+        while ($tries++ < $self->poll_retries) {
+            my ($poll_headers, $poll_response) = $self->_do_request(
+                'result-retrieve',
+                { 'Proc-ID' => $headers->{'Proc-ID'} },
+            );
+            if ($poll_headers->{'Status-Code'} == 0) {
+                # we have our result
+                return $poll_response;
+            }
+        }
+
+        # Still here?  Then we never got a usable response, die.
+        die sprintf "Proc-ID %s still unprocessed after %d retries",
+            $headers->{'Proc-ID'}, $tries;
+    }
+        
+    return wantarray ? ($body, %$headers) : $body;
+}
+
+# Actually make the request, parse the response into a set of headers and the
+# response content, and return it.
+sub _do_request {
     my ($self, $method, $params) = @_;
 
     $params ||= {};
@@ -302,19 +398,13 @@ sub do_request {
             warn __PACKAGE__ . " $VERSION has not been tested with Joker"
                 . " DMAPI version $headers{Version}";
         }
-        if ($headers{'Status-Code'} != 0) {
-            my $error = "Joker request failed with status "
-                . $headers{'Status-Text'};
-            $self->_log(error => $error);
-            die $error;
-        }
-
-        $self->balance($headers{'Account-Balance'}) if defined $headers{'Account-Balance'};
-        $self->auth_sid($headers{'Auth-Sid'}) if $headers{'Auth-Sid'};
-
-        return wantarray ? ($body, %headers) : $body;
-    };
+        return (\%headers, $body);
+    }
 }
+
+
+
+
 
 =item available_tlds
 
